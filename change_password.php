@@ -18,6 +18,23 @@ $success = [
     'change_password' => $_SESSION['update_password_success'] ?? ''
 ];
 
+/**
+ * Displays the status message for the change password operation.
+ *
+ * @param array $errors  An associative array of error messages.
+ * @param array $success An associative array of success messages.
+ * 
+ * @return string The error or success message for the change password operation, or an empty string if none exist.
+ */
+function showStatus($errors, $success) {
+    if (!empty($errors['change_password'])) {
+        return showError($errors['change_password']);
+    } elseif (!empty($success['change_password'])) {
+        return showSuccess($success['change_password']);
+    }
+    return '';
+}
+
 function showError($error) {
     if (!empty($error)) {
         unset($_SESSION['update_password_error']);
@@ -54,6 +71,16 @@ if (isset($_POST['update_result'])) {
     $result = mysqli_query($conn, $query);
     $row = mysqli_fetch_assoc($result);
 
+
+    /**
+     * Handles the password change process for a user.
+     * 
+     * - Verifies if the provided current password matches the stored password.
+     * - Checks if the new password and confirm password match.
+     * - Updates the user's password in the database if all conditions are met.
+     * - Sets appropriate session messages for success or error scenarios.
+     * - Redirects the user back to the change password page after processing.
+     */
     if (password_verify($current_password, $row['password'])) {
         if ($new_password === $confirm_password) {
             $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
@@ -89,13 +116,7 @@ if (isset($_POST['update_result'])) {
 </head>
 <body>
     <div class="form-box-password" id="change-password-form">
-        <?php
-        if (!empty($errors['change_password'])) {
-            echo showError($errors['change_password']);
-        } elseif (!empty($success['change_password'])) {
-            echo showSuccess($success['change_password']);
-        }
-        ?>
+        <?= showStatus($errors, $success) ?>
         <h2>Change Password</h2>
         <form method="post" action="change_password.php">
             <input type="password" name="current_password" placeholder="Current Password" required>
